@@ -62,9 +62,9 @@ static inline void PROVLOG_P2F(const ProcInfo *pi, const FileInfo *fi, const cha
 			<< std::endl;
 		break;
 		default:
-			prov_out << "# unused file:"
+			prov_out << "w:"
 				<< pi->p.asid << ":" << pi->label() << ":" << fi->name_escaped() 
-				<< ":r" << fi->read() << ":w" << fi->written() << ":f" << fi->flags()
+				//<< ":r" << fi->read() << ":w" << fi->written() << ":f" << fi->flags()
 			<< std::endl;
 		break;
 	}

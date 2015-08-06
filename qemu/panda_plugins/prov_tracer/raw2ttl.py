@@ -20,6 +20,7 @@ rdf_header = dedent('''
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix dt: <http://m000.github.com/ns/v1/desktop#> .
+    @prefix adapt: <http://parc.com/ns/v1/adapt#> .
 ''').strip()
 
 rdf_exec_fmt = dedent('''
@@ -50,6 +51,10 @@ rdf_duration_fmt = dedent('''
     <exe://{program_url}> prov:endedAtTime {ended_pts} .
 ''').strip()
 
+rdf_accessedby_fmt = dedent('''
+    <file:{file_url}> adapt:wasAccessedBy <exe://{program_url}> .
+''').strip()
+
 #### time formatr - you guessed it, for provToolbox #################
 time_fmt = lambda t: t
 #time_fmt = lambda t: datetime.datetime.fromtimestamp(float(t)).isoformat() # --doesn't work
@@ -75,7 +80,7 @@ def get_program_type(process):
         'zip':          'Fileutil',
         'ls':           'Shellutil',
     }
-    exe, pid = process.rsplit('~', 1)
+    exe, pid, ppid = process.rsplit('~', 2)
 
     # provToolbox doesn't like dots in dt:
     return prog_types[exe] if exe in prog_types else exe.replace('.', '')
@@ -165,6 +170,32 @@ def process_u(data):
 
     #print triple
     print rdf_used_fmt.format(
+        program_url = process,
+        # prov toolbox has problems with url-quoted characters
+        # file_url = urllib.pathname2url(filename),
+        file_url = filename,
+    )
+
+def process_w(data):
+    global s
+    # line format: w:<asid>:<process label>:<filename>
+    asid, process, filename = data
+    process = ':'.join(process.split(';'))
+
+    if filename not in s.files:
+        file_type = mimetypes.guess_type(filename)[0]
+        file_type = re.sub(r'\W+', '', file_type) if file_type else "Unknown"
+        print rdf_open_fmt.format(
+            # prov toolbox has problems with url-quoted characters
+            # file_url = urllib.pathname2url(filename),
+            file_url = filename,
+            label = filename,
+            file_type = file_type,
+        )
+        s.files.add(filename)
+
+    #print triple
+    print rdf_accessedby_fmt.format(
         program_url = process,
         # prov toolbox has problems with url-quoted characters
         # file_url = urllib.pathname2url(filename),

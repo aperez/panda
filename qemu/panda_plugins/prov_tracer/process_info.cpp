@@ -117,7 +117,7 @@ uint64_t ProcInfo::ended_pts() const { return this->ended_pts_; }
 
 std::string ProcInfo::label() const {
 	std::ostringstream ss;
-	ss << this->p.name << '~' << this->p.pid << (this->is_fresh ? "*" : "");
+	ss << this->p.name << '~' << this->p.pid  << '~' << this->p.ppid << (this->is_fresh ? "*" : "");
 	return ss.str();
 }
 
